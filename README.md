@@ -35,3 +35,11 @@ Hetu has implemented the first version of POCS in the Eigenlayer AVS named AOS.
 - [acl-aos-zkml](https://github.com/hetu-project/acl-aos-zmkl)
 
   AOS-ZMKL Worker is a Rust-based project that integrates zero-knowledge machine learning (ZKML) to handle cryptographic proof generation and verification for machine learning models. This worker is designed to work as part of a larger decentralized system, utilizing zero-knowledge proofs to ensure privacy and integrity in model inference and verification.The project is based on ezkl, a framework for integrating zero-knowledge proofs with machine learning models, providing a secure and verifiable method for proving model outputs without revealing sensitive data.
+
+- [acl-aos-vrfcontract](https://github.com/hetu-project/acl-aos-vrfcontract)
+
+  POCS VRF range contract of Aos network.
+
+- [acl-aos-challenge](https://github.com/hetu-project/acl-aos-challenge)
+
+  Challenger of EigenAVS.
