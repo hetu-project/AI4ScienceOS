@@ -16,6 +16,10 @@ POCC is the hyper-scalable verification component in the ACL protocol group, cur
 ## Implementation
 ### POCS
 Hetu has implemented the first version of POCS in the Eigenlayer AVS named AOS.
+- [acl-aos-tee](https://github.com/hetu-project/acl-aos-tee)
+
+  Run large AI models and verifiable logic clock in TEE environment.Firstly, the semantic TEE of this repository is mainly refer to aws nitro enclave for now.
+  
 - [acl-aos-dispatcher](https://github.com/hetu-project/acl-aos-dispatcher)
 
   AOS Dispatcher is a Rust-based server application that handles TEE (Trusted Execution Environment) and OPML (OPtimistic Machine Learning) requests and responses.
