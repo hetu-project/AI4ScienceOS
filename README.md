@@ -9,7 +9,7 @@ The current protocol group includes the following protocol.
 
 ## Implementation
 ### POCS
-Hetu has implemented the first version of POCS in the Eigenlayer AVS named AOS.
+Hetu has implemented the first version of POCS in the Eigenlayer AVS named AI4Science OS(AOS).
 - [acl-aos-tee](https://github.com/hetu-project/acl-aos-tee)
 
   Run large AI models and verifiable logic clock in TEE environment.Firstly, the semantic TEE of this repository is mainly refer to aws nitro enclave for now.
