@@ -1,10 +1,10 @@
-# ai-coordination-layer
-This repository contains all the design documents for the Hetu AI Coordination Layer (ACL).  
+# AI for Science Framework
+This repository contains all the design documents for the Hetu AI for Science Framework (AI4Science).  
 
-ACL is a protocol group, its fundamental principles include hyper-scalable verifications, interoperable ordering mechanisms for incentivization, and robust anti-censorship governance tailored for DeAI collaborations By operating within a disruptive causality framework.
+AI4Science is a framework, its fundamental principles include hyper-scalable verifications, interoperable ordering mechanisms for incentivization, and robust anti-censorship governance tailored for DeAI collaborations By operating within a disruptive causality framework.
 
 ## Overview
-The current protocol group includes the following protocol.
+The current framework includes the following protocol.
 - [Causality Sampling(POCS)](https://github.com/hetu-project/ai-coordination-layer/blob/421c7ca8d628eaa21c3ad8b85d3014502f17d262/POCC/CausalitySampling.md)
 
 ## Implementation
