@@ -9,7 +9,7 @@ The ML scenario addressed in this article is OPML with EigenAVS.
 ## What problem was solved by POCS
 Due to the computational resources required in the ML process and the correctness verification algorithms still being based on reproducible results, using a large amount of computing power for real-time validation is economically unfeasible for AI networks. POCS optimistically records the process of ML events by leveraging causal relationships from VLC, and under set scenarios, it uses these causal relationships to challenge recorded ML events . This approach makes full use of limited challenge computing power to enhance the ability to detect malicious actors in the ML process and significantly increases the difficulty of coordinated fraud among multiple nodes.
 ## Architecture(EigenAVS)
-![POCS](https://github.com/hetu-project/ai-coordination-layer/blob/e5f13868f4dbaf785d3e721d2c3e96d241fc6763/pocs.png)
+![POCS](pocs.png)
 ## How POCS works
 1. Worker nodes, acting as EigenAVS Operators, register with the on-chain contract and connect to the Gateway node via P2P to obtain VLC-LOG data synchronization.
    
