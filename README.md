@@ -20,6 +20,8 @@ Democratize scientific innovation by transforming isolated research silos into a
 
 ## Module Overview
 The current AI4SOS framework includes the following modules:
+![a4sos_arch](asset/a4s_Arch.png)
+
 
 1.  **Specialized AI Engine**
     1.  Specialized AI Model Training
@@ -53,10 +55,10 @@ The current AI4SOS framework includes the following modules:
   
     Infrastructure components covering functions such as model training, data crowdsourcing, model deployment, model evaluation, model feedback, and multi-agent collaboration.
 
--   **CausalityGraph**
+-   **[CausalityGraph](./causality-graph)**
   
     A decentralized data collaboration network based on verifiable logical clocks and Proof of Contribution Work (POCW). It provides foundational data sources for model evolution dependency graphs, governance and audit frameworks, SocialGraph, and CausalityKey reward distribution by constructing databases, knowledge graphs, etc.
 
--   **ModelGraph**
+-   **[ModelGraph](./modelgraph)**
   
     ModelGraph is a protocol for establishing verifiable contribution graphs during AI model evolution and composition output processes. Combined with the off-chain CausalityGraph, ModelGraph can provide model evolution dependency graphs, agent and resource call relationship graphs, and leverage blockchain technology for transparent, verifiable, and real-time incentives.

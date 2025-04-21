@@ -11,7 +11,7 @@ POCS protocol is a protocol that allows users to verify the correctness of machi
 - The TEE verification is correct
 
 ### POCS Flow
-- [Causality Sampling(POCS)]()
+- ![Causality Sampling(POCS)](pocs.png)
 
 ### Implementation
 Hetu has implemented the first version of POCS in the Eigenlayer AVS named AOS.
