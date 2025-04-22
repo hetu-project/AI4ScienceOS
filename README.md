@@ -55,7 +55,7 @@ The current AI4SOS framework includes the following modules:
   
     Infrastructure components covering functions such as model training, data crowdsourcing, model deployment, model evaluation, model feedback, and multi-agent collaboration.
 
--   **[CausalityGraph](./causality-graph)**
+-   **[CausalityGraph](https://github.com/hetu-project/causalitygraph)**
   
     A decentralized data collaboration network based on verifiable logical clocks and Proof of Contribution Work (POCW). It provides foundational data sources for model evolution dependency graphs, governance and audit frameworks, SocialGraph, and CausalityKey reward distribution by constructing databases, knowledge graphs, etc.
 
