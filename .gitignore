@@ -256,3 +256,23 @@ agent/content
 eliza.manifest
 eliza.manifest.sgx
 eliza.sig
+
+# Dependencies
+.pnp.*
+
+# Build files
+/.umi/
+/.umi-production/
+/.mfsu/
+/.ice/
+
+# Coverage
+.nyc_output/
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+*.swp
+*.swo
+*~
