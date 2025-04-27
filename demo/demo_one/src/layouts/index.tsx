@@ -3,6 +3,7 @@ import { Layout, Menu } from 'antd';
 import { Link } from '@umijs/max';
 import { HomeOutlined, CalculatorOutlined, CheckSquareOutlined, AlignLeftOutlined, AppstoreOutlined, DeploymentUnitOutlined } from '@ant-design/icons';
 import { PrivyProvider } from '@privy-io/react-auth';
+import { mainnet } from 'viem/chains';
 
 const { Header, Content, Sider } = Layout;
 
@@ -16,6 +17,12 @@ export default function CustomLayout() {
           theme: 'light',
           accentColor: '#3b82f6',
         },
+        embeddedWallets: {
+          createOnLogin: 'all-users',
+          noPromptOnSignature: false,
+        },
+        defaultChain: mainnet,
+        supportedChains: [mainnet],
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>

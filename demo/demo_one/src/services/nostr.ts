@@ -45,6 +45,14 @@ export class NostrService {
         };
     }
 
+    // 获取当前密钥对
+    getKeys(): { secretKey: string | null; publicKey: string | null } {
+        return {
+            secretKey: this.secretKey,
+            publicKey: this.publicKey,
+        };
+    }
+
     // 创建新的子空间
     async createSubspace(params: {
         name: string;
