@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Input, message, List, Typography, Space } from 'antd';
 import { nostrService } from '@/services/nostr';
+import { usePrivy } from '@privy-io/react-auth';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -12,28 +13,58 @@ const HomePage: React.FC = () => {
   const [content, setContent] = useState('');
   const [events, setEvents] = useState<any[]>([]);
 
+  const { login, logout, user, ready, authenticated } = usePrivy();
+
   useEffect(() => {
-    // 初始化连接
-    const initConnection = async () => {
+    const initializeServices = async () => {
       try {
+        if (authenticated && user) {
+          setConnected(true);
+          // 获取用户的公钥
+          const walletAddress = user.wallet?.address;
+          if (walletAddress) {
+            setPublicKey(`mpc_${walletAddress}`);
+          }
+        }
+
+        // 连接到Nostr中继
         await nostrService.connect();
-        setConnected(true);
         message.success('Connected to Nostr relay');
       } catch (error) {
-        message.error('Failed to connect to Nostr relay');
+        console.error('Initialization failed:', error);
+        message.error('Failed to initialize services');
       }
     };
 
-    initConnection();
-  }, []);
+    if (ready) {
+      initializeServices();
+    }
+  }, [ready, authenticated, user]);
 
-  const handleGenerateKeys = () => {
-    const { publicKey: newPublicKey } = nostrService.generateKeys();
-    setPublicKey(newPublicKey);
-    message.success('Keys generated successfully');
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      message.error('Login failed');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setPublicKey(null);
+      setConnected(false);
+      message.success('Logged out successfully');
+    } catch (error) {
+      message.error('Logout failed');
+    }
   };
 
   const handleCreateSubspace = async () => {
+    if (!publicKey) {
+      message.error('Please login first');
+      return;
+    }
     try {
       const result = await nostrService.createSubspace({
         name: 'Test Subspace',
@@ -50,6 +81,10 @@ const HomePage: React.FC = () => {
   };
 
   const handleJoinSubspace = async () => {
+    if (!publicKey) {
+      message.error('Please login first');
+      return;
+    }
     if (!subspaceId) {
       message.error('Please enter a subspace ID');
       return;
@@ -64,6 +99,10 @@ const HomePage: React.FC = () => {
   };
 
   const handlePublishContent = async () => {
+    if (!publicKey) {
+      message.error('Please login first');
+      return;
+    }
     if (!subspaceId || !content) {
       message.error('Please enter both subspace ID and content');
       return;
@@ -95,9 +134,15 @@ const HomePage: React.FC = () => {
             {publicKey && (
               <Text>Public Key: {publicKey}</Text>
             )}
-            <Button type="primary" onClick={handleGenerateKeys}>
-              Generate New Keys
-            </Button>
+            {connected ? (
+              <Button type="primary" danger onClick={handleLogout}>
+                Logout
+              </Button>
+            ) : (
+              <Button type="primary" onClick={handleLogin}>
+                Login with MPC Wallet
+              </Button>
+            )}
           </Space>
         </Card>
 

@@ -2,49 +2,61 @@ import { Outlet } from '@umijs/max';
 import { Layout, Menu } from 'antd';
 import { Link } from '@umijs/max';
 import { HomeOutlined, CalculatorOutlined, CheckSquareOutlined, AlignLeftOutlined, AppstoreOutlined, DeploymentUnitOutlined } from '@ant-design/icons';
+import { PrivyProvider } from '@privy-io/react-auth';
 
 const { Header, Content, Sider } = Layout;
 
 export default function CustomLayout() {
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ display: 'flex', alignItems: 'center', background: '#fff', padding: '0 24px' }}>
-        <div style={{ fontSize: '20px', fontWeight: 'bold' }}>Causality Graph</div>
-      </Header>
-      <Layout>
-        <Sider width={200} style={{ background: '#fff' }}>
-          <Menu
-            mode="inline"
-            defaultSelectedKeys={['1']}
-            style={{ height: '100%', borderRight: 0 }}
-          >
-            <Menu.Item key="1" icon={<HomeOutlined />}>
-              <Link to="/">Home</Link>
-            </Menu.Item>
-            <Menu.Item key="2" icon={<CheckSquareOutlined />}>
-              <Link to="/vote">DeGovernance</Link>
-            </Menu.Item>
-            <Menu.Item key="3" icon={<AlignLeftOutlined />}>
-              <Link to="/alignment">Alignment</Link>
-            </Menu.Item>
-            <Menu.Item key="4" icon={<DeploymentUnitOutlined />}>
-              <Link to="/modelgraph">ModelGraph</Link>
-            </Menu.Item>
-          </Menu>
-        </Sider>
-        <Layout style={{ padding: '24px' }}>
-          <Content
-            style={{
-              padding: 24,
-              margin: 0,
-              minHeight: 280,
-              background: '#fff',
-            }}
-          >
-            <Outlet />
-          </Content>
+    <PrivyProvider
+      appId={"cm9z9zbig00f5la0mz07ds1ep"}
+      config={{
+        loginMethods: ['email', 'wallet'],
+        appearance: {
+          theme: 'light',
+          accentColor: '#3b82f6',
+        },
+      }}
+    >
+      <Layout style={{ minHeight: '100vh' }}>
+        <Header style={{ display: 'flex', alignItems: 'center', background: '#fff', padding: '0 24px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>Causality Graph</div>
+        </Header>
+        <Layout>
+          <Sider width={200} style={{ background: '#fff' }}>
+            <Menu
+              mode="inline"
+              defaultSelectedKeys={['1']}
+              style={{ height: '100%', borderRight: 0 }}
+            >
+              <Menu.Item key="1" icon={<HomeOutlined />}>
+                <Link to="/">Home</Link>
+              </Menu.Item>
+              <Menu.Item key="2" icon={<CheckSquareOutlined />}>
+                <Link to="/vote">DeGovernance</Link>
+              </Menu.Item>
+              <Menu.Item key="3" icon={<AlignLeftOutlined />}>
+                <Link to="/alignment">Alignment</Link>
+              </Menu.Item>
+              <Menu.Item key="4" icon={<DeploymentUnitOutlined />}>
+                <Link to="/modelgraph">ModelGraph</Link>
+              </Menu.Item>
+            </Menu>
+          </Sider>
+          <Layout style={{ padding: '24px' }}>
+            <Content
+              style={{
+                padding: 24,
+                margin: 0,
+                minHeight: 280,
+                background: '#fff',
+              }}
+            >
+              <Outlet />
+            </Content>
+          </Layout>
         </Layout>
       </Layout>
-    </Layout>
+    </PrivyProvider>
   );
 } 
