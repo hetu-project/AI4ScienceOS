@@ -27,7 +27,7 @@
         "src/.umi/*"
       ],
       "@umijs/max": [
-        "../../node_modules/.pnpm/umi@4.4.6_@babel+core@7.26.10_@types+node@18.19.86_@types+react@19.1.2_eslint@8.35.0_li_de078124b7581900f89bfbc677d6a157/node_modules/umi"
+        "../../node_modules/.pnpm/umi@4.4.6_@babel+core@7.26.10_@types+node@18.19.86_@types+react@19.1.2_eslint@8.35.0_je_d5ba816af4fb915a0d1daf2bfd286adc/node_modules/umi"
       ],
       "@umijs/max/typings": [
         "src/.umi/typings"

@@ -7,10 +7,10 @@ export type { RuntimeConfig } from './core/defineApp'
 // plugins
 // plugins types.d.ts
 // @umijs/renderer-*
-export { createBrowserHistory, createHashHistory, createMemoryHistory, Helmet, HelmetProvider, createSearchParams, generatePath, matchPath, matchRoutes, Navigate, NavLink, Outlet, resolvePath, useLocation, useMatch, useNavigate, useOutlet, useOutletContext, useParams, useResolvedPath, useRoutes, useSearchParams, useAppData, useClientLoaderData, useLoaderData, useRouteProps, useSelectedRoutes, useServerLoaderData, renderClient, __getRoot, Link, useRouteData, __useFetcher, withRouter } from '/home/litterpigger/hetu/causality_front/my-app/node_modules/.pnpm/@umijs+renderer-react@4.4.6_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/@umijs/renderer-react';
-export type { History, ClientLoader } from '/home/litterpigger/hetu/causality_front/my-app/node_modules/.pnpm/@umijs+renderer-react@4.4.6_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/@umijs/renderer-react'
+export { createBrowserHistory, createHashHistory, createMemoryHistory, Helmet, HelmetProvider, createSearchParams, generatePath, matchPath, matchRoutes, Navigate, NavLink, Outlet, resolvePath, useLocation, useMatch, useNavigate, useOutlet, useOutletContext, useParams, useResolvedPath, useRoutes, useSearchParams, useAppData, useClientLoaderData, useLoaderData, useRouteProps, useSelectedRoutes, useServerLoaderData, renderClient, __getRoot, Link, useRouteData, __useFetcher, withRouter } from '/home/litterpigger/hetu/AI4ScienceOS/demo/demo_one/node_modules/.pnpm/@umijs+renderer-react@4.4.6_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/@umijs/renderer-react';
+export type { History, ClientLoader } from '/home/litterpigger/hetu/AI4ScienceOS/demo/demo_one/node_modules/.pnpm/@umijs+renderer-react@4.4.6_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/@umijs/renderer-react'
 // umi/client/client/plugin
-export { ApplyPluginsType, PluginManager } from '/home/litterpigger/hetu/causality_front/my-app/node_modules/.pnpm/umi@4.4.6_@babel+core@7.26.10_@types+node@18.19.86_@types+react@19.1.2_eslint@8.35.0_li_de078124b7581900f89bfbc677d6a157/node_modules/umi/client/client/plugin.js';
+export { ApplyPluginsType, PluginManager } from '/home/litterpigger/hetu/AI4ScienceOS/demo/demo_one/node_modules/.pnpm/umi@4.4.6_@babel+core@7.26.10_@types+node@18.19.86_@types+react@19.1.2_eslint@8.35.0_je_d5ba816af4fb915a0d1daf2bfd286adc/node_modules/umi/client/client/plugin.js';
 export { history, createHistory } from './core/history';
 export { terminal } from './core/terminal';
 // react ssr

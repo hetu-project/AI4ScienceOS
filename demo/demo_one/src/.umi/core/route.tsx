@@ -15,7 +15,7 @@ export async function getRoutes() {
 '5': React.lazy(() => import(/* webpackChunkName: "p__alignment__index" */'@/pages/alignment/index.tsx')),
 '6': React.lazy(() => import(/* webpackChunkName: "p__governance__index" */'@/pages/governance/index.tsx')),
 '7': React.lazy(() => import(/* webpackChunkName: "p__create-subspace__index" */'@/pages/create-subspace/index.tsx')),
-'@@/global-layout': React.lazy(() => import(/* webpackChunkName: "layouts__index" */'/home/litterpigger/hetu/causality_front/my-app/src/layouts/index.tsx')),
+'@@/global-layout': React.lazy(() => import(/* webpackChunkName: "layouts__index" */'/home/litterpigger/hetu/AI4ScienceOS/demo/demo_one/src/layouts/index.tsx')),
 },
   };
 }
