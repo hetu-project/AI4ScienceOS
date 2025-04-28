@@ -17,13 +17,7 @@ declare module '@ai-chen2050/nostr-tools/relay' {
 }
 
 declare module '@ai-chen2050/nostr-tools/cip/subspace' {
-    export function NewSubspaceCreateEvent(
-        name: string,
-        ops: string,
-        rules: string,
-        description: string,
-        imageURL: string
-    ): any;
+    export function NewSubspaceCreateEvent(name: string, ops: string, rules: string, description: string, imageURL: string): any;
     export function ValidateSubspaceCreateEvent(event: any): void;
     export function NewSubspaceJoinEvent(subspaceID: string): any;
     export function ValidateSubspaceJoinEvent(event: any): void;

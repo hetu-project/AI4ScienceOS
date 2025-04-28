@@ -96,8 +96,26 @@ const CreateSubspace = () => {
         imageURL: 'https://example.com/image.jpg' // TODO: 添加图片上传功能
       });
 
+      // 格式化事件对象
+      const formattedEvent = {
+        kind: 30100,
+        created_at: Math.floor(Date.now() / 1000),
+        content: JSON.stringify({
+          desc: values.description,
+          img_url: 'https://example.com/image.jpg'
+        }),
+        pubkey: user.wallet.address,
+        tags: [
+          ['d', 'subspace_create'],
+          ['sid', subspaceEvent.subspaceID],
+          ['subspace_name', values.name],
+          ['ops', values.ops],
+          ['rules', values.rules]
+        ]
+      };
+
       // 2. 请求用户签名
-      const messageToSign = JSON.stringify(subspaceEvent);
+      const messageToSign = JSON.stringify(formattedEvent);
       const signature = await signMessage(messageToSign);
       
       if (!signature) {
@@ -106,7 +124,7 @@ const CreateSubspace = () => {
 
       // 添加签名到事件对象
       const signedEvent = {
-        ...subspaceEvent,
+        ...formattedEvent,
         sig: signature
       };
 
