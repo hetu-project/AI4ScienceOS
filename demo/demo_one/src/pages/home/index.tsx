@@ -8,8 +8,9 @@ const { TextArea } = Input;
 
 const HomePage: React.FC = () => {
   const [connected, setConnected] = useState(false);
-  const [publicKey, setPublicKey] = useState<string | null>(null);
-  const [secretKey, setSecretKey] = useState<string | null>(null);
+  const [mpcPublicKey, setMpcPublicKey] = useState<string | null>(null);
+  const [nostrPublicKey, setNostrPublicKey] = useState<string | null>(null);
+  const [nostrSecretKey, setNostrSecretKey] = useState<string | null>(null);
   const [createSubspaceId, setCreateSubspaceId] = useState('');
   const [joinSubspaceId, setJoinSubspaceId] = useState('');
   const [publishSubspaceId, setPublishSubspaceId] = useState('');
@@ -28,9 +29,9 @@ const HomePage: React.FC = () => {
           // 获取MPC钱包
           const embeddedWallet = user.linkedAccounts.find(account => account.type === 'wallet');
           if (embeddedWallet) {
-            // 使用MPC钱包地址作为Nostr身份
-            setPublicKey(embeddedWallet.address);
-            console.log('MPC Wallet Address (Nostr Identity):', embeddedWallet.address);
+            // 保存MPC钱包地址
+            setMpcPublicKey(embeddedWallet.address);
+            console.log('MPC Wallet Address:', embeddedWallet.address);
           }
         }
 
@@ -54,8 +55,8 @@ const HomePage: React.FC = () => {
       // 创建MPC钱包
       const wallet = await createWallet();
       if (wallet) {
-        setPublicKey(wallet.address);
-        console.log('New MPC Wallet Address (Nostr Identity):', wallet.address);
+        setMpcPublicKey(wallet.address);
+        console.log('New MPC Wallet Address:', wallet.address);
       }
     } catch (error) {
       message.error('Login failed');
@@ -65,7 +66,7 @@ const HomePage: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      setPublicKey(null);
+      setMpcPublicKey(null);
       setConnected(false);
       message.success('Logged out successfully');
     } catch (error) {
@@ -97,8 +98,23 @@ const HomePage: React.FC = () => {
     }
   };
 
+  // 生成Nostr密钥对
+  const handleGenerateKeys = () => {
+    try {
+      const { secretKey, publicKey } = nostrService.generateKeys();
+      setNostrSecretKey(secretKey);
+      setNostrPublicKey(publicKey);
+      // 确保NostrService使用正确的密钥对
+      nostrService.setKeys(secretKey, publicKey);
+      message.success('成功生成Nostr密钥对');
+    } catch (error) {
+      console.error('生成密钥对失败:', error);
+      message.error('生成密钥对失败');
+    }
+  };
+
   const handleCreateSubspace = async () => {
-    if (!publicKey) {
+    if (!nostrPublicKey) {
       setError('请先生成Nostr密钥对');
       message.error('请先生成Nostr密钥对');
       return;
@@ -111,7 +127,7 @@ const HomePage: React.FC = () => {
     try {
       const result = await nostrService.createSubspace({
         name: 'Test Subspace',
-        ops: 'test',
+        ops: 'admin=1,moderator=2,member=3',
         rules: 'test',
         description: 'A test subspace',
         imageURL: 'https://example.com/image.jpg'
@@ -127,7 +143,7 @@ const HomePage: React.FC = () => {
   };
 
   const handleJoinSubspace = async () => {
-    if (!publicKey) {
+    if (!nostrPublicKey) {
       setError('请先生成Nostr密钥对');
       message.error('请先生成Nostr密钥对');
       return;
@@ -150,7 +166,7 @@ const HomePage: React.FC = () => {
   };
 
   const handlePublishContent = async () => {
-    if (!publicKey) {
+    if (!nostrPublicKey) {
       setError('请先生成Nostr密钥对');
       message.error('请先生成Nostr密钥对');
       return;
@@ -183,19 +199,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  // 生成Nostr密钥对
-  const handleGenerateKeys = () => {
-    try {
-      const { secretKey, publicKey } = nostrService.generateKeys();
-      setSecretKey(secretKey);
-      setPublicKey(publicKey);
-      message.success('成功生成Nostr密钥对');
-    } catch (error) {
-      console.error('生成密钥对失败:', error);
-      message.error('生成密钥对失败');
-    }
-  };
-
   return (
     <div className="p-6">
       <Title level={2}>Nostr Service</Title>
@@ -205,10 +208,10 @@ const HomePage: React.FC = () => {
         <Card title="Connection Status">
           <Space direction="vertical">
             <Text>Status: {connected ? 'Connected' : 'Disconnected'}</Text>
-            {publicKey && (
+            {mpcPublicKey && (
               <>
-                <Text>Nostr Public Key: {publicKey}</Text>
-                <Text type="secondary">Your Nostr public key is used for all operations.</Text>
+                <Text>MPC Wallet Address: {mpcPublicKey}</Text>
+                <Text type="secondary">Your MPC wallet address is used for authentication.</Text>
               </>
             )}
             {connected ? (
@@ -229,16 +232,16 @@ const HomePage: React.FC = () => {
             <Button type="primary" onClick={handleGenerateKeys}>
               Generate Nostr Keys
             </Button>
-            {publicKey && (
+            {nostrPublicKey && (
               <>
-                <Text>Public Key:</Text>
-                <Text code>{publicKey}</Text>
+                <Text>Nostr Public Key:</Text>
+                <Text code>{nostrPublicKey}</Text>
               </>
             )}
-            {secretKey && (
+            {nostrSecretKey && (
               <>
-                <Text>Secret Key:</Text>
-                <Text code>{secretKey}</Text>
+                <Text>Nostr Secret Key:</Text>
+                <Text code>{nostrSecretKey}</Text>
               </>
             )}
           </Space>

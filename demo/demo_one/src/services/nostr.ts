@@ -53,6 +53,12 @@ export class NostrService {
         };
     }
 
+    // 设置密钥对
+    setKeys(secretKey: string, publicKey: string) {
+        this.secretKey = secretKey;
+        this.publicKey = publicKey;
+    }
+
     // 创建新的子空间
     async createSubspace(params: {
         name: string;
@@ -64,6 +70,9 @@ export class NostrService {
         if (!this.relay) {
             throw new Error('Not connected to relay');
         }
+        if (!this.secretKey) {
+            throw new Error('No secret key available');
+        }
 
         const subspaceEvent = NewSubspaceCreateEvent(
             params.name,
@@ -74,7 +83,7 @@ export class NostrService {
         );
         ValidateSubspaceCreateEvent(subspaceEvent);
 
-        const signedSubspaceEvent = finalizeEvent(toNostrEvent(subspaceEvent), this.secretKey!);
+        const signedSubspaceEvent = finalizeEvent(toNostrEvent(subspaceEvent), this.secretKey);
         await this.relay.publish(signedSubspaceEvent);
         return signedSubspaceEvent;
     }
@@ -84,11 +93,14 @@ export class NostrService {
         if (!this.relay) {
             throw new Error('Not connected to relay');
         }
+        if (!this.secretKey) {
+            throw new Error('No secret key available');
+        }
 
         const joinEvent = NewSubspaceJoinEvent(subspaceID);
         ValidateSubspaceJoinEvent(joinEvent);
 
-        const signedJoinEvent = finalizeEvent(toNostrEvent(joinEvent), this.secretKey!);
+        const signedJoinEvent = finalizeEvent(toNostrEvent(joinEvent), this.secretKey);
         await this.relay.publish(signedJoinEvent);
         return signedJoinEvent;
     }
@@ -103,13 +115,16 @@ export class NostrService {
         if (!this.relay) {
             throw new Error('Not connected to relay');
         }
+        if (!this.secretKey) {
+            throw new Error('No secret key available');
+        }
 
         const opEvent = NewSubspaceOpEvent(params.subspaceID, params.operation);
         SetContentType(opEvent, params.contentType);
         opEvent.content = params.content;
         ValidateSubspaceOpEvent(opEvent);
 
-        const signedOpEvent = finalizeEvent(toNostrEvent(opEvent), this.secretKey!);
+        const signedOpEvent = finalizeEvent(toNostrEvent(opEvent), this.secretKey);
         await this.relay.publish(signedOpEvent);
         return signedOpEvent;
     }
