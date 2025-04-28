@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Input, message, List, Typography, Space } from 'antd';
 import { nostrService } from '@/services/nostr';
+import { eventAPIService } from '@/services/eventAPI';
 import { usePrivy } from '@privy-io/react-auth';
 
 const { Title, Text } = Typography;
@@ -18,8 +19,10 @@ const HomePage: React.FC = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [signature, setSignature] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [apiEvents, setApiEvents] = useState<any[]>([]);
+  const [newEventContent, setNewEventContent] = useState('');
 
-  const { login, logout, user, ready, authenticated, createWallet, signMessage } = usePrivy();
+  const { login, logout, user, ready, authenticated, createWallet, signMessage, signTypedData } = usePrivy();
 
   useEffect(() => {
     const initializeServices = async () => {
@@ -199,6 +202,78 @@ const HomePage: React.FC = () => {
     }
   };
 
+  // 获取API事件
+  const fetchApiEvents = async () => {
+    try {
+      const events = await eventAPIService.getAllEvents();
+      setApiEvents(events);
+    } catch (error) {
+      console.error('Failed to fetch API events:', error);
+      message.error('获取事件失败');
+    }
+  };
+
+  // 发布新事件到API
+  const handlePublishApiEvent = async () => {
+    if (!mpcPublicKey) {
+      setError('请先登录MPC钱包');
+      message.error('请先登录MPC钱包');
+      return;
+    }
+    if (!newEventContent) {
+      setError('请输入事件内容');
+      message.error('请输入事件内容');
+      return;
+    }
+    try {
+      // 创建事件对象
+      const event = {
+        id: `event_${Date.now()}`,
+        pubkey: mpcPublicKey,
+        created_at: Math.floor(Date.now() / 1000),
+        kind: 1,
+        content: newEventContent,
+        tags: [['client', 'web']],
+        sig: '' // 初始为空,等待签名
+      };
+
+      // 请求用户签名
+      const messageToSign = JSON.stringify({
+        id: event.id,
+        pubkey: event.pubkey,
+        created_at: event.created_at,
+        kind: event.kind,
+        content: event.content,
+        tags: event.tags
+      });
+
+      // 使用Privy的signMessage方法
+      const signature = await signMessage(messageToSign);
+
+      if (!signature) {
+        throw new Error('签名失败');
+      }
+
+      // 更新事件对象,添加签名
+      event.sig = signature;
+
+      // 发布事件到API
+      await eventAPIService.publishEvent(event);
+      message.success('事件发布成功');
+      setNewEventContent('');
+      fetchApiEvents(); // 刷新事件列表
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '发布事件失败';
+      setError(errorMessage);
+      message.error(errorMessage);
+    }
+  };
+
+  // 在组件挂载时获取事件
+  useEffect(() => {
+    fetchApiEvents();
+  }, []);
+
   return (
     <div className="p-6">
       <Title level={2}>Nostr Service</Title>
@@ -295,6 +370,39 @@ const HomePage: React.FC = () => {
             <Button type="primary" onClick={handlePublishContent}>
               Publish Content
             </Button>
+          </Space>
+        </Card>
+
+        {/* API Events */}
+        <Card title="API Events">
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <TextArea
+              placeholder="Enter event content"
+              value={newEventContent}
+              onChange={(e) => setNewEventContent(e.target.value)}
+              rows={4}
+            />
+            <Button type="primary" onClick={handlePublishApiEvent}>
+              Publish Event
+            </Button>
+            <List
+              dataSource={apiEvents}
+              renderItem={(event) => (
+                <List.Item>
+                  <Card style={{ width: '100%' }}>
+                    <Text>ID: {event.id}</Text>
+                    <br />
+                    <Text>Pubkey: {event.pubkey}</Text>
+                    <br />
+                    <Text>Content: {event.content}</Text>
+                    <br />
+                    <Text>Kind: {event.kind}</Text>
+                    <br />
+                    <Text>Created At: {new Date(event.created_at * 1000).toLocaleString()}</Text>
+                  </Card>
+                </List.Item>
+              )}
+            />
           </Space>
         </Card>
 

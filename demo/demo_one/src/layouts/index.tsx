@@ -19,7 +19,7 @@ export default function CustomLayout() {
         },
         embeddedWallets: {
           createOnLogin: 'all-users',
-          noPromptOnSignature: false,
+          noPromptOnSignature: true,
         },
         defaultChain: mainnet,
         supportedChains: [mainnet],
