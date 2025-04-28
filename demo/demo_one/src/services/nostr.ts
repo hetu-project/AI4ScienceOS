@@ -1,16 +1,24 @@
-import { finalizeEvent, generateSecretKey, getPublicKey } from '@ai-chen2050/nostr-tools/pure';
-import { Relay, useWebSocketImplementation } from '@ai-chen2050/nostr-tools/relay';
+import { finalizeEvent, generateSecretKey, getPublicKey, serializeEvent,finalizeEventBySig } from '../../node_modules/@ai-chen2050/nostr-tools/lib/esm/pure.js';
+import { Relay, useWebSocketImplementation } from '../../node_modules/@ai-chen2050/nostr-tools/lib/esm/relay.js';
 import {
-    NewSubspaceCreateEvent,
-    ValidateSubspaceCreateEvent,
-    NewSubspaceJoinEvent,
-    ValidateSubspaceJoinEvent,
-    NewSubspaceOpEvent,
-    SetContentType,
-    toNostrEvent,
-    KindSubspaceCreate,
-    ValidateSubspaceOpEvent,
-} from '@ai-chen2050/nostr-tools/subspace';
+  NewSubspaceCreateEvent,
+  ValidateSubspaceCreateEvent,
+  NewSubspaceJoinEvent,
+  ValidateSubspaceJoinEvent,
+  toNostrEvent,
+} from '../../node_modules/@ai-chen2050/nostr-tools/lib/esm/cip/subspace.js'
+import {KindSubspaceCreate} from '../../node_modules/@ai-chen2050/nostr-tools/lib/esm/cip/constants.js'
+import {newPostEvent, newVoteEvent, toNostrEvent as toNostrEventGov} from '../../node_modules/@ai-chen2050/nostr-tools/lib/esm/cip/cip01/governance.js'
+
+interface NostrEvent {
+    id: string;
+    pubkey: string;
+    created_at: number;
+    kind: number;
+    content: string;
+    tags: string[][];
+    sig: string;
+}
 
 export class NostrService {
     private relay: Relay | null = null;
@@ -24,6 +32,20 @@ export class NostrService {
             useWebSocketImplementation(WebSocket);
         }
     }
+
+    // 设置relay实例
+    setRelay(relay: Relay) {
+        this.relay = relay;
+    }
+
+    // 断开连接
+    disconnect() {
+        if (this.relay) {
+            this.relay.close();
+            this.relay = null;
+        }
+    }
+
     // 连接到中继服务器
     async connect(): Promise<void> {
         try {
@@ -66,13 +88,7 @@ export class NostrService {
         rules: string;
         description: string;
         imageURL: string;
-    }): Promise<any> {
-        if (!this.relay) {
-            throw new Error('Not connected to relay');
-        }
-        if (!this.secretKey) {
-            throw new Error('No secret key available');
-        }
+    }): Promise<NostrEvent> {
 
         const subspaceEvent = NewSubspaceCreateEvent(
             params.name,
@@ -81,15 +97,22 @@ export class NostrService {
             params.description,
             params.imageURL
         );
+        console.log('subspaceEvent',subspaceEvent)
         ValidateSubspaceCreateEvent(subspaceEvent);
-
-        const signedSubspaceEvent = finalizeEvent(toNostrEvent(subspaceEvent), this.secretKey);
-        await this.relay.publish(signedSubspaceEvent);
+        console.log('ValidateSubspaceCreateEvent',ValidateSubspaceCreateEvent(subspaceEvent))
+        return subspaceEvent;
+    }
+    async PublishCreateSubspace(subspaceEvent: NostrEvent,address: string,sig: string): Promise<NostrEvent> {
+        console.log('sig',sig)
+        console.log('address',address)
+        const signedSubspaceEvent = finalizeEventBySig(subspaceEvent,address,sig);
+        console.log('signedSubspaceEvent',signedSubspaceEvent)
+        const result = await this.relay.publish(signedSubspaceEvent);
+        console.log('Successfully published subspace event:', result);
         return signedSubspaceEvent;
     }
-
     // 加入子空间
-    async joinSubspace(subspaceID: string): Promise<any> {
+    async joinSubspace(subspaceID: string): Promise<NostrEvent> {
         if (!this.relay) {
             throw new Error('Not connected to relay');
         }
@@ -105,13 +128,12 @@ export class NostrService {
         return signedJoinEvent;
     }
 
-    // 在子空间中发布内容
-    async publishContent(params: {
+    // 在子空间中发布帖子
+    async publishPost(params: {
         subspaceID: string;
-        operation: string;
         contentType: string;
-        content: string;
-    }): Promise<any> {
+        parent?: string;
+    }): Promise<NostrEvent> {
         if (!this.relay) {
             throw new Error('Not connected to relay');
         }
@@ -119,18 +141,48 @@ export class NostrService {
             throw new Error('No secret key available');
         }
 
-        const opEvent = NewSubspaceOpEvent(params.subspaceID, params.operation);
-        SetContentType(opEvent, params.contentType);
-        opEvent.content = params.content;
-        ValidateSubspaceOpEvent(opEvent);
+        const postEvent = await newPostEvent(params.subspaceID, "post");
+        if (!postEvent) {
+            throw new Error('Failed to create post event');
+        }
 
-        const signedOpEvent = finalizeEvent(toNostrEvent(opEvent), this.secretKey);
-        await this.relay.publish(signedOpEvent);
-        return signedOpEvent;
+        postEvent.setContentType(params.contentType);
+        if (params.parent) {
+            postEvent.setParent(params.parent);
+        }
+
+        const signedPostEvent = finalizeEvent(toNostrEventGov(postEvent), this.secretKey);
+        await this.relay.publish(signedPostEvent);
+        return signedPostEvent;
+    }
+
+    // 在子空间中投票
+    async publishVote(params: {
+        subspaceID: string;
+        targetId: string;
+        vote: string;
+    }): Promise<NostrEvent> {
+        if (!this.relay) {
+            throw new Error('Not connected to relay');
+        }
+        if (!this.secretKey) {
+            throw new Error('No secret key available');
+        }
+
+        const voteEvent = await newVoteEvent(params.subspaceID, "vote");
+        if (!voteEvent) {
+            throw new Error('Failed to create vote event');
+        }
+
+        voteEvent.setVote(params.targetId, params.vote);
+
+        const signedVoteEvent = finalizeEvent(toNostrEventGov(voteEvent), this.secretKey);
+        await this.relay.publish(signedVoteEvent);
+        return signedVoteEvent;
     }
 
     // 订阅子空间事件
-    subscribeToSubspace(subspaceID: string, callback: (event: any) => void): void {
+    subscribeToSubspace(subspaceID: string, callback: (event: NostrEvent) => void): void {
         if (!this.relay) {
             throw new Error('Not connected to relay');
         }
@@ -143,19 +195,11 @@ export class NostrService {
                 },
             ],
             {
-                onevent(event) {
+                onevent(event: NostrEvent) {
                     callback(event);
                 },
             }
         );
-    }
-
-    // 关闭连接
-    close(): void {
-        if (this.relay) {
-            this.relay.close();
-            this.relay = null;
-        }
     }
 }
 // 创建单例实例

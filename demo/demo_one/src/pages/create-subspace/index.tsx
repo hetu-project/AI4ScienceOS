@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Upload, message, Select, Tooltip, Typography } from 'antd';
 import { UploadOutlined, CaretDownOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { history } from '@umijs/max';
+import { nostrService } from '@/services/nostr';
+import { usePrivy } from '@privy-io/react-auth';
+import { Relay } from '@ai-chen2050/nostr-tools';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -10,12 +13,8 @@ const { Text } = Typography;
 interface Template {
   name: string;
   description: string;
-  rules: {
-    post: number;
-    proposal: number;
-    vote: number;
-    invite: number;
-  };
+  ops: string;
+  rules: string;
 }
 
 interface Templates {
@@ -27,18 +26,45 @@ const templates: Templates = {
   ModelDAO: {
     name: 'ModelDAO',
     description: 'Standard ModelDAO template with predefined permission levels',
-    rules: {
-      post: 1,      // Permission level for posting
-      proposal: 2,  // Permission level for creating proposals
-      vote: 3,      // Permission level for voting
-      invite: 4     // Permission level for inviting members
-    }
+    ops: 'post=1,propose=2,vote=3,invite=4',
+    rules: 'Standard DAO rules'
   }
 };
 
 const CreateSubspace = () => {
   const [form] = Form.useForm();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const { signMessage, user } = usePrivy();
+
+  useEffect(() => {
+    const connectRelay = async () => {
+      try {
+        const relayURL = 'ws://161.97.129.166:10547';
+        console.log('Connecting to relay...');
+        const relay = await Relay.connect(relayURL);
+        console.log(`Connected to ${relay.url}`);
+
+
+        // 将relay实例保存到nostrService
+        console.log('Setting relay in nostrService...');
+        nostrService.setRelay(relay);
+        console.log('Relay set successfully');
+      } catch (error) {
+        console.error('Failed to connect to relay:', error);
+        message.error('连接relay失败');
+      }
+    };
+
+    connectRelay();
+
+    // 清理函数
+    return () => {
+      console.log('Disconnecting relay...');
+      nostrService.disconnect();
+      console.log('Relay disconnected');
+    };
+  }, []);
 
   const handleTemplateChange = (value: string) => {
     setSelectedTemplate(value);
@@ -47,16 +73,54 @@ const CreateSubspace = () => {
       form.setFieldsValue({
         name: template.name,
         description: template.description,
-        rules: JSON.stringify(template.rules, null, 2)
+        ops: template.ops,
+        rules: template.rules
       });
     }
   };
 
-  const onFinish = (values: any) => {
-    console.log('Form values:', values);
-    // TODO: Handle form submission
-    message.success('Subspace created successfully!');
-    history.push('/vote');
+  const onFinish = async (values: any) => {
+    try {
+      if (!user?.wallet?.address) {
+        throw new Error('请先连接钱包');
+      }
+
+      setIsCreating(true);
+      
+      // 1. 创建子空间事件
+      const subspaceEvent = await nostrService.createSubspace({
+        name: values.name,
+        ops: values.ops,
+        rules: values.rules,
+        description: values.description,
+        imageURL: 'https://example.com/image.jpg' // TODO: 添加图片上传功能
+      });
+
+      // 2. 请求用户签名
+      const messageToSign = JSON.stringify(subspaceEvent);
+      const signature = await signMessage(messageToSign);
+      
+      if (!signature) {
+        throw new Error('签名失败');
+      }
+
+      // 添加签名到事件对象
+      const signedEvent = {
+        ...subspaceEvent,
+        sig: signature
+      };
+
+      // 3. 发布子空间
+      await nostrService.PublishCreateSubspace(signedEvent, user.wallet.address, signature);
+      
+      message.success('子空间创建成功!');
+      history.push('/vote');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '创建子空间失败';
+      message.error(errorMessage);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -117,19 +181,26 @@ const CreateSubspace = () => {
           <Form.Item
             label={
               <span>
-                Rules 
-                <Tooltip title="Define permission levels for the subspace">
+                Operations 
+                <Tooltip title="Define permission levels in format: key=value,key=value">
                   <InfoCircleOutlined style={{ marginLeft: 8 }} />
                 </Tooltip>
               </span>
             }
+            name="ops"
+            rules={[{ required: true, message: 'Please input the operations!' }]}
+          >
+            <Input placeholder="e.g. post=1,propose=2,vote=3,invite=4" />
+          </Form.Item>
+
+          <Form.Item
+            label="Rules"
             name="rules"
             rules={[{ required: true, message: 'Please input the rules!' }]}
           >
             <TextArea
-              placeholder="Enter rules in JSON format"
-              rows={6}
-              className="font-mono"
+              placeholder="Enter rules"
+              rows={4}
             />
           </Form.Item>
 
@@ -138,7 +209,11 @@ const CreateSubspace = () => {
               <Button onClick={() => history.push('/vote')}>
                 Cancel
               </Button>
-              <Button type="primary" htmlType="submit">
+              <Button 
+                type="primary" 
+                htmlType="submit"
+                loading={isCreating}
+              >
                 Create Subspace
               </Button>
             </div>
