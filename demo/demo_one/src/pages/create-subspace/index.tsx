@@ -5,8 +5,8 @@ import { history } from '@umijs/max';
 import { nostrService } from '@/services/nostr';
 import { usePrivy } from '@privy-io/react-auth';
 import { Relay } from '@ai-chen2050/nostr-tools';
-import { toNostrEvent } from '../../../node_modules/@ai-chen2050/nostr-tools/lib/esm/cip/cip01/governance.js';
-
+import { toNostrEvent } from '../../../node_modules/@ai-chen2050/nostr-tools/lib/esm/cip/subspace.js';
+import { serializeEvent } from '../../../node_modules/@ai-chen2050/nostr-tools/lib/esm/pure.js';
 const { TextArea } = Input;
 const { Option } = Select;
 const { Text } = Typography;
@@ -97,37 +97,15 @@ const CreateSubspace = () => {
         imageURL: 'https://example.com/image.jpg' // TODO: 添加图片上传功能
       });
       const nostrEvent = toNostrEvent(subspaceEvent);
-      console.log(nostrEvent)
-      // 格式化事件对象
-      const formattedEvent = {
-        kind: 30100,
-        created_at: Math.floor(Date.now() / 1000),
-        content: JSON.stringify({
-          desc: values.description,
-          img_url: 'https://example.com/image.jpg'
-        }),
-        pubkey: user.wallet.address,
-        tags: [
-          ['d', 'subspace_create'],
-          ['sid', subspaceEvent.subspaceID],
-          ['subspace_name', values.name],
-          ['ops', values.ops],
-          ['rules', values.rules]
-        ]
-      };
-
+      console.log('nostrEvent',nostrEvent)
       // 2. 请求用户签名
-      const messageToSign = JSON.stringify(nostrEvent);
+      nostrEvent.pubkey = user.wallet.address;
+      const messageToSign = serializeEvent(nostrEvent);
       const signature = await signMessage(messageToSign);
+      console.log('signature',signature)
       if (!signature) {
         throw new Error('签名失败');
       }
-
-      // 添加签名到事件对象
-      const signedEvent = {
-        ...formattedEvent,
-        sig: signature
-      };
 
       // 3. 发布子空间
       await nostrService.PublishCreateSubspace(subspaceEvent, user.wallet.address, signature);
