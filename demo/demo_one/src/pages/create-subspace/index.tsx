@@ -5,6 +5,7 @@ import { history } from '@umijs/max';
 import { nostrService } from '@/services/nostr';
 import { usePrivy } from '@privy-io/react-auth';
 import { Relay } from '@ai-chen2050/nostr-tools';
+import { toNostrEvent } from '../../../node_modules/@ai-chen2050/nostr-tools/lib/esm/cip/cip01/governance.js';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -95,7 +96,8 @@ const CreateSubspace = () => {
         description: values.description,
         imageURL: 'https://example.com/image.jpg' // TODO: 添加图片上传功能
       });
-
+      const nostrEvent = toNostrEvent(subspaceEvent);
+      console.log(nostrEvent)
       // 格式化事件对象
       const formattedEvent = {
         kind: 30100,
@@ -115,9 +117,8 @@ const CreateSubspace = () => {
       };
 
       // 2. 请求用户签名
-      const messageToSign = JSON.stringify(formattedEvent);
+      const messageToSign = JSON.stringify(nostrEvent);
       const signature = await signMessage(messageToSign);
-      
       if (!signature) {
         throw new Error('签名失败');
       }
@@ -129,7 +130,7 @@ const CreateSubspace = () => {
       };
 
       // 3. 发布子空间
-      await nostrService.PublishCreateSubspace(signedEvent, user.wallet.address, signature);
+      await nostrService.PublishCreateSubspace(subspaceEvent, user.wallet.address, signature);
       
       message.success('子空间创建成功!');
       history.push('/vote');

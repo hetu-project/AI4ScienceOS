@@ -20,6 +20,17 @@ interface NostrEvent {
     sig: string;
 }
 
+// 首先定义一个 SubspaceEvent 接口
+interface SubspaceEvent {
+    subspaceID: string;
+    name: string;
+    ops: string;
+    rules: string;
+    description: string;
+    imageURL: string;
+    // 其他可能的字段
+}
+
 export class NostrService {
     private relay: Relay | null = null;
     private secretKey: string | null = null;
@@ -88,8 +99,7 @@ export class NostrService {
         rules: string;
         description: string;
         imageURL: string;
-    }): Promise<NostrEvent> {
-
+    }): Promise<SubspaceEvent> {
         const subspaceEvent = NewSubspaceCreateEvent(
             params.name,
             params.ops,
@@ -97,20 +107,23 @@ export class NostrService {
             params.description,
             params.imageURL
         );
-        console.log('subspaceEvent',subspaceEvent)
         ValidateSubspaceCreateEvent(subspaceEvent);
-        console.log('ValidateSubspaceCreateEvent',ValidateSubspaceCreateEvent(subspaceEvent))
+        console.log('subspaceEvent', subspaceEvent);
         return subspaceEvent;
     }
-    async PublishCreateSubspace(subspaceEvent: NostrEvent,address: string,sig: string): Promise<NostrEvent> {
-        console.log('sig',sig)
-        console.log('address',address)
-        const signedSubspaceEvent = finalizeEventBySig(subspaceEvent,address,sig);
-        console.log('signedSubspaceEvent',signedSubspaceEvent)
+
+    // 修改参数类型
+    async PublishCreateSubspace(subspaceEvent: SubspaceEvent, address: string, sig: string): Promise<NostrEvent> {
+        console.log('sig', sig);
+        console.log('address', address);
+        const nostrEvent = toNostrEvent(subspaceEvent);
+        const signedSubspaceEvent = finalizeEventBySig(nostrEvent, address, sig);
+        console.log('signedSubspaceEvent', signedSubspaceEvent);
         const result = await this.relay.publish(signedSubspaceEvent);
         console.log('Successfully published subspace event:', result);
         return signedSubspaceEvent;
     }
+
     // 加入子空间
     async joinSubspace(subspaceID: string): Promise<NostrEvent> {
         if (!this.relay) {
