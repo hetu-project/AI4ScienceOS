@@ -9,6 +9,7 @@ import {
 } from '../../node_modules/@ai-chen2050/nostr-tools/lib/esm/cip/subspace.js'
 import {KindSubspaceCreate} from '../../node_modules/@ai-chen2050/nostr-tools/lib/esm/cip/constants.js'
 import {newPostEvent, newVoteEvent, toNostrEvent as toNostrEventGov} from '../../node_modules/@ai-chen2050/nostr-tools/lib/esm/cip/cip01/governance.js'
+import { ethers } from 'ethers';
 
 interface NostrEvent {
     id: string;
@@ -213,6 +214,11 @@ export class NostrService {
                 },
             }
         );
+    }
+    recoverAddress(signedMessage: string, signature: string) {
+        const recoveredAddress = ethers.utils.verifyMessage(signedMessage, signature);
+        console.log("恢复的地址：", recoveredAddress);
+        return recoveredAddress;
     }
 }
 // 创建单例实例

@@ -37,6 +37,7 @@ const CreateSubspace = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const { signMessage, user } = usePrivy();
+  const [mpcPublicKey, setMpcPublicKey] = useState<string | null>(null);
 
   useEffect(() => {
     const connectRelay = async () => {
@@ -56,7 +57,7 @@ const CreateSubspace = () => {
         message.error('连接relay失败');
       }
     };
-
+    console.log('user',user)
     connectRelay();
 
     // 清理函数
@@ -66,6 +67,16 @@ const CreateSubspace = () => {
       console.log('Relay disconnected');
     };
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      const embeddedWallet = user.linkedAccounts.findLast(account => account.type === 'wallet');
+      if (embeddedWallet) {
+        setMpcPublicKey(embeddedWallet.address);
+        console.log('MPC Wallet Address:', embeddedWallet.address);
+      }
+    }
+  }, [user]);
 
   const handleTemplateChange = (value: string) => {
     setSelectedTemplate(value);
@@ -82,37 +93,60 @@ const CreateSubspace = () => {
 
   const onFinish = async (values: any) => {
     try {
-      if (!user?.wallet?.address) {
+      if (!mpcPublicKey) {
         throw new Error('请先连接钱包');
       }
 
       setIsCreating(true);
       
       // 1. 创建子空间事件
+      console.log('1. Creating subspace with values:', values);
       const subspaceEvent = await nostrService.createSubspace({
         name: values.name,
         ops: values.ops,
         rules: values.rules,
         description: values.description,
-        imageURL: 'https://example.com/image.jpg' // TODO: 添加图片上传功能
+        imageURL: 'https://example.com/image.jpg'
       });
+      console.log('2. Subspace event created:', JSON.stringify(subspaceEvent, null, 2));
+
       const nostrEvent = toNostrEvent(subspaceEvent);
-      console.log('nostrEvent',nostrEvent)
+      console.log('3. Converted to Nostr event:', JSON.stringify(nostrEvent, null, 2));
+
       // 2. 请求用户签名
-      nostrEvent.pubkey = user.wallet.address;
+      nostrEvent.pubkey = mpcPublicKey.slice(2);
+      console.log('4. address:', nostrEvent.pubkey);
       const messageToSign = serializeEvent(nostrEvent);
-      const signature = await signMessage(messageToSign);
-      console.log('signature',signature)
+      console.log('4. Message to sign:', messageToSign);
+      
+      const signature = (await signMessage(messageToSign));
+      const recoveredAddress = nostrService.recoverAddress(messageToSign, signature);
+      console.log('5. recoveredAddress:', recoveredAddress);
+      console.log('5. Signature received:', signature);
+      
       if (!signature) {
         throw new Error('签名失败');
       }
 
       // 3. 发布子空间
-      await nostrService.PublishCreateSubspace(subspaceEvent, user.wallet.address, signature);
+      console.log('6. Publishing subspace with:', {
+        subspaceEvent: JSON.stringify(subspaceEvent, null, 2),
+        address: mpcPublicKey,
+        signature
+      });
+      
+      await nostrService.PublishCreateSubspace(subspaceEvent, mpcPublicKey, signature);
       
       message.success('子空间创建成功!');
       history.push('/vote');
     } catch (error) {
+      console.error('Error in onFinish:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        cause: error instanceof Error ? error.cause : undefined
+      });
       const errorMessage = error instanceof Error ? error.message : '创建子空间失败';
       message.error(errorMessage);
     } finally {
