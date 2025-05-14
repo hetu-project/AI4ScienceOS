@@ -24,7 +24,7 @@ AI4SOS utilizes a layered architecture to provide a robust, transparent, and eco
 
 This layer establishes the ground rules for verifiable contributions and data integrity across the network.
 
-*   **`POCW (Proof of Causality Work)`:** A consensus mechanism designed to validate and quantify the value of diverse causality work.This ensures fair recognition.
+*   **`POCW (Proof of Causal Work)`:** A consensus mechanism designed to validate and quantify the value of diverse Causal work.This ensures fair recognition.
 *   **`Causality Graph`:** A decentralized ledger or graph database that immutably records the relationships and dependencies between different contributions and actions within the ecosystem (e.g., which data was used to train which model, which model called another). It provides the verifiable data source for attribution.
 *   **`Causality Key`:** A protocol or mechanism leveraging the Causality Graph to enable automated and transparent value attribution and reward distribution. It ensures that contributors are compensated based on their verifiable impact within the network.
 
